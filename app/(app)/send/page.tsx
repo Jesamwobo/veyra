@@ -1,10 +1,12 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { fmt } from "@/lib/format";
+import Confetti from "@/components/Confetti";
 
 type Match = { username: string; display_name: string };
+const QUICK = [10, 25, 50, 100];
 
 export default function SendPage() {
   const supabase = createClient();
@@ -18,6 +20,8 @@ export default function SendPage() {
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null);
+  const [confetti, setConfetti] = useState(false);
+  const stopConfetti = useCallback(() => setConfetti(false), []);
   const idemKey = useRef(crypto.randomUUID());
 
   async function loadBalance() {
@@ -27,7 +31,13 @@ export default function SendPage() {
     const { data } = await supabase.from("wallets").select("available_balance").eq("owner_type", "user").eq("owner_id", user.id).single();
     if (data) setBalance(Number(data.available_balance));
   }
-  useEffect(() => { loadBalance(); /* eslint-disable-next-line */ }, []);
+
+  useEffect(() => {
+    loadBalance();
+    const pre = new URLSearchParams(window.location.search).get("to");
+    if (pre && /^[a-z0-9_]{3,20}$/.test(pre)) setTo(pre);
+    // eslint-disable-next-line
+  }, []);
 
   useEffect(() => {
     const q = query.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
@@ -51,6 +61,7 @@ export default function SendPage() {
     if (error) setNotice({ ok: false, text: error.message });
     else {
       setNotice({ ok: true, text: `Sent ${fmt(Number(amount))} VYR to @${to}.` });
+      setConfetti(true);
       idemKey.current = crypto.randomUUID();
       setTo(null); setQuery(""); setAmount(""); setNote("");
       loadBalance(); router.refresh();
@@ -60,6 +71,7 @@ export default function SendPage() {
 
   return (
     <>
+      {confetti && <Confetti onDone={stopConfetti} />}
       <h1 className="font-display text-3xl font-bold tracking-tight">Send VYR</h1>
       <p className="mt-1 text-ink/60">You have {balance === null ? "…" : fmt(balance)} VYR available.</p>
 
@@ -90,13 +102,21 @@ export default function SendPage() {
         </div>
         <div>
           <label className="label" htmlFor="amt">Amount (VYR)</label>
+          <div className="mb-2 flex gap-2">
+            {QUICK.map((q) => (
+              <button key={q} type="button" onClick={() => setAmount(String(q))}
+                className={`rounded-full border px-3 py-1.5 text-sm font-semibold transition ${amount === String(q) ? "border-iris bg-iris/10" : "border-line bg-paper hover:border-iris/50"}`}>
+                {q}
+              </button>
+            ))}
+          </div>
           <input id="amt" type="number" inputMode="numeric" min={1} step={1} className="input" value={amount} onChange={(e) => setAmount(e.target.value)} required />
         </div>
         <div>
           <label className="label" htmlFor="note">Note (optional)</label>
           <input id="note" className="input" value={note} onChange={(e) => setNote(e.target.value)} maxLength={140} placeholder="Thanks for reviewing my site" />
         </div>
-        {notice && <p role="status" className={`text-sm ${notice.ok ? "text-mint" : "text-rose"}`}>{notice.text}</p>}
+        {notice && <p role="status" className={`text-sm font-medium ${notice.ok ? "text-mint" : "text-rose"}`}>{notice.text}</p>}
         <button className="btn-primary" disabled={busy || !to || !amount}>Send VYR</button>
       </form>
     </>

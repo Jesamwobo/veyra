@@ -1,11 +1,23 @@
 "use client";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import type { CatalogItem, Mission } from "@/lib/types";
+import type { CatalogItem, Mission, Stats } from "@/lib/types";
 import { fmt } from "@/lib/format";
+import { getLevel } from "@/lib/levels";
+import Confetti from "@/components/Confetti";
 
-export default function MissionBoard({ missions, catalog }: { missions: Mission[]; catalog: CatalogItem[] }) {
+const IDEAS = [
+  { t: "Read 5 pages", r: 10 },
+  { t: "Read 20 pages", r: 25 },
+  { t: "Finish one lesson", r: 50 },
+  { t: "Do a practical exercise", r: 100 },
+  { t: "Hit a project milestone", r: 200 },
+];
+
+export default function MissionBoard({
+  missions, catalog, stats,
+}: { missions: Mission[]; catalog: CatalogItem[]; stats: Stats | null }) {
   const supabase = createClient();
   const router = useRouter();
   const [title, setTitle] = useState("");
@@ -13,9 +25,17 @@ export default function MissionBoard({ missions, catalog }: { missions: Mission[
   const [deadline, setDeadline] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null);
+  const [confetti, setConfetti] = useState(false);
+  const stopConfetti = useCallback(() => setConfetti(false), []);
 
   const open = missions.filter((m) => m.status === "open");
   const done = missions.filter((m) => m.status === "completed").slice(0, 5);
+
+  function pickIdea(idea: { t: string; r: number }) {
+    setTitle(idea.t);
+    const match = catalog.find((c) => c.reward_amount === idea.r);
+    if (match) setCatalogId(match.id);
+  }
 
   async function create(e: React.FormEvent) {
     e.preventDefault();
@@ -33,8 +53,23 @@ export default function MissionBoard({ missions, catalog }: { missions: Mission[
   async function complete(id: string) {
     setBusy(id); setNotice(null);
     const { data, error } = await supabase.rpc("complete_mission", { p_mission_id: id });
-    if (error) setNotice({ ok: false, text: error.message });
-    else { setNotice({ ok: true, text: `Mission complete. You earned ${fmt(Number(data))} VYR.` }); router.refresh(); }
+    if (error) {
+      setNotice({ ok: false, text: error.message });
+    } else {
+      const reward = Number(data);
+      const xp = stats?.xp ?? 0;
+      const before = getLevel(xp);
+      const after = getLevel(xp + reward);
+      let text = `Mission complete. You earned ${fmt(reward)} VYR.`;
+      if (after.index > before.index) text += ` Level up: you are now ${after.name}!`;
+      else if (stats && !stats.done_today) {
+        const n = stats.streak + 1;
+        text += ` Streak: ${n} ${n === 1 ? "day" : "days"}.`;
+      }
+      setNotice({ ok: true, text });
+      setConfetti(true);
+      router.refresh();
+    }
     setBusy(null);
   }
 
@@ -48,9 +83,21 @@ export default function MissionBoard({ missions, catalog }: { missions: Mission[
 
   return (
     <section aria-labelledby="missions-h" className="mt-8">
+      {confetti && <Confetti onDone={stopConfetti} />}
       <h2 id="missions-h" className="font-display text-2xl font-bold tracking-tight">Your missions</h2>
 
       <form onSubmit={create} className="mt-4 space-y-3 rounded-xl border border-line bg-white p-4">
+        <div>
+          <p className="label">Quick ideas</p>
+          <div className="flex flex-wrap gap-2">
+            {IDEAS.map((i) => (
+              <button key={i.t} type="button" onClick={() => pickIdea(i)}
+                className="rounded-full border border-line bg-paper px-3 py-1.5 text-sm transition hover:border-iris">
+                {i.t} <span className="font-semibold text-[#B7791A]">+{i.r}</span>
+              </button>
+            ))}
+          </div>
+        </div>
         <div>
           <label className="label" htmlFor="m-title">What will you do?</label>
           <input id="m-title" className="input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Read chapter 3 of my design book" maxLength={120} required />
@@ -71,11 +118,11 @@ export default function MissionBoard({ missions, catalog }: { missions: Mission[
       </form>
 
       {notice && (
-        <p role="status" className={`mt-3 text-sm ${notice.ok ? "text-mint" : "text-rose"}`}>{notice.text}</p>
+        <p role="status" className={`mt-3 text-sm font-medium ${notice.ok ? "text-mint" : "text-rose"}`}>{notice.text}</p>
       )}
 
       {open.length === 0 ? (
-        <p className="mt-6 text-ink/60">No open missions. Add one above and earn VYR when you finish it.</p>
+        <p className="mt-6 text-ink/60">No open missions. Pick a quick idea above and earn VYR when you finish it.</p>
       ) : (
         <ul className="mt-4 divide-y divide-line">
           {open.map((m) => {

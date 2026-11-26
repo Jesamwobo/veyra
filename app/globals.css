@@ -19,3 +19,22 @@
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+@keyframes confetti-fall {
+  0% { transform: translate3d(0, -10vh, 0) rotate(0); opacity: 1; }
+  100% { transform: translate3d(var(--drift), 105vh, 0) rotate(var(--rot)); opacity: 0.9; }
+}
+.confetti-piece {
+  position: absolute; top: 0; border-radius: 2px;
+  animation-name: confetti-fall; animation-timing-function: cubic-bezier(.2,.6,.4,1); animation-fill-mode: forwards;
+}
+@keyframes float-up {
+  0% { opacity: 0; transform: translateY(8px) scale(.9); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-38px) scale(1.1); }
+}
+.float-up { animation: float-up 1.6s ease-out forwards; }
+@keyframes coin-spin { from { transform: rotateY(0); } to { transform: rotateY(360deg); } }
+.coin-spin { animation: coin-spin .7s ease-in-out; }
+@keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.25); } 100% { transform: scale(1); } }
+.pop { animation: pop .3s ease-out; }
