@@ -40,11 +40,11 @@ export default function Landing() {
       <header className="mx-auto flex max-w-5xl items-center justify-between px-5 py-5">
         <span className="flex items-center gap-2.5">
           <span aria-hidden="true" className="grid h-9 w-9 place-items-center rounded-full bg-coin font-display text-lg font-bold text-ink">V</span>
-          <span className="font-display text-2xl font-bold tracking-tight">Veyra</span>
+          <span className="font-display text-2xl font-bold tracking-tight max-[400px]:hidden">Veyra</span>
         </span>
         <nav className="flex items-center gap-2" aria-label="Account">
-          <Link href="/login" className="btn-ghost">Sign in</Link>
-          <Link href="/login" className="btn-primary">Join the beta</Link>
+          <Link href="/login" className="btn-ghost !px-3">Sign in</Link>
+          <Link href="/login" className="btn-primary !px-4">Join the beta</Link>
         </nav>
       </header>
 

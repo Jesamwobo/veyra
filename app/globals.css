@@ -12,7 +12,7 @@
   .btn-primary { @apply btn bg-iris text-white hover:bg-[#3d28c9]; }
   .btn-mint { @apply btn bg-mint text-white hover:bg-[#12805a]; }
   .btn-ghost { @apply btn text-ink/70 hover:bg-line/60; }
-  .input { @apply w-full rounded-lg border border-line bg-white px-3.5 py-2.5 text-sm placeholder:text-ink/40 focus:border-iris focus:outline-none; }
+  .input { @apply w-full rounded-lg border border-line bg-white px-3.5 py-2.5 text-base sm:text-sm placeholder:text-ink/40 focus:border-iris focus:outline-none; }
   .label { @apply mb-1.5 block text-sm font-medium text-ink/80; }
 }
 

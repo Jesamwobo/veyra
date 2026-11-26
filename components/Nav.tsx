@@ -22,18 +22,26 @@ export default function Nav({ username }: { username: string }) {
 
   return (
     <header className="sticky top-0 z-10 border-b border-line bg-paper/90 backdrop-blur">
-      <div className="mx-auto flex max-w-2xl items-center justify-between gap-2 px-4 py-3">
-        <span className="font-display text-xl font-bold tracking-tight">Veyra</span>
-        <nav className="flex gap-1" aria-label="Main">
+      <div className="mx-auto max-w-2xl px-4 pt-3">
+        <div className="flex items-center justify-between gap-3">
+          <span className="font-display text-xl font-bold tracking-tight">Veyra</span>
+          <span className="flex min-w-0 items-center gap-3 text-xs text-ink/60">
+            <span className="truncate">@{username}</span>
+            <button onClick={signOut} className="shrink-0 font-semibold text-ink/70 underline-offset-2 hover:underline">Sign out</button>
+          </span>
+        </div>
+        <nav className="mt-2 grid grid-cols-4 gap-1 pb-2" aria-label="Main">
           {links.map((l) => (
-            <Link key={l.href} href={l.href}
+            <Link
+              key={l.href}
+              href={l.href}
               aria-current={path === l.href ? "page" : undefined}
-              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${path === l.href ? "bg-ink text-white" : "text-ink/70 hover:bg-line/60"}`}>
+              className={`rounded-lg py-2.5 text-center text-sm font-medium transition ${path === l.href ? "bg-ink text-white" : "text-ink/70 hover:bg-line/60"}`}
+            >
               {l.label}
             </Link>
           ))}
         </nav>
-        <button onClick={signOut} className="text-xs text-ink/50 hover:text-ink" title="Sign out">@{username}</button>
       </div>
     </header>
   );
