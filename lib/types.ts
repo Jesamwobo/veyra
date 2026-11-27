@@ -20,3 +20,26 @@ export type Stats = {
   done_today: boolean; xp: number; missions_completed: number;
   transfers_sent: number; lifetime_earned: number;
 };
+
+export type Task = {
+  id: string;
+  mission_type: "personal" | "community_job";
+  title: string;
+  description: string | null;
+  reward_amount: number;
+  status: string;
+  deadline: string;
+  created_at: string;
+  completed_at: string | null;
+  submitted_at: string | null;
+  submission_text: string | null;
+  evidence_url: string | null;
+  review_note: string | null;
+  rejection_count: number;
+  creator_username: string;
+  assignee_username: string | null;
+  verifier_username: string | null;
+  is_creator: boolean;
+  is_assignee: boolean;
+  is_verifier: boolean;
+};

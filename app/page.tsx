@@ -9,14 +9,14 @@ export const metadata: Metadata = {
 
 const steps = [
   { title: "Set a mission", text: "Pick something you want to get done, like reading 20 pages or finishing a lesson, and choose how hard it is." },
-  { title: "Finish it", text: "Tap Done when it’s done. Your streak grows and your level bar moves." },
+  { title: "Get it verified", text: "Submit what you did before your deadline. A friend you choose checks it and approves, so rewards are earned, not just claimed." },
   { title: "Earn VYR", text: "Each difficulty pays a fixed amount, so you always know what a mission is worth before you start." },
   { title: "Share the value", text: "Send VYR to a friend who helped you, cheer on their wins in the feed, and see who’s leading." },
 ];
 
 const rules = [
   { term: "VYR has no cash value", text: "It’s a virtual reward unit. It can’t be bought, sold or withdrawn." },
-  { term: "Rewards are fixed", text: "Missions pay from a set catalogue, from 10 to 200 VYR. Nobody can pick their own price." },
+  { term: "Rewards are fixed", text: "Missions pay from a set catalogue, from 10 to 200 VYR, and nothing is paid until someone else verifies the work." },
   { term: "Earning is capped each day", text: "A daily limit stops one person from flooding the economy." },
   { term: "Every movement is recorded", text: "Each transfer is written to a permanent ledger that can’t be edited or deleted." },
 ];
@@ -142,7 +142,7 @@ export default function Landing() {
           <div>
             <h2 className="font-display text-3xl font-bold tracking-tight">Coming next</h2>
             <ul className="mt-3 space-y-2 text-ink/70">
-              <li><span className="font-semibold text-ink">Job board:</span> ask a friend for help and pay them in VYR, held safely in escrow until the work is approved.</li>
+              <li><span className="font-semibold text-ink">Open job board:</span> post a task for anyone in the community to pick up. You can already assign tasks to friends, with the reward held in escrow.</li>
               <li><span className="font-semibold text-ink">Communities:</span> private groups with their own leaderboards.</li>
               <li><span className="font-semibold text-ink">Group challenges:</span> 30 days of reading, together.</li>
             </ul>

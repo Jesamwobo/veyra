@@ -6,7 +6,7 @@ import MissionBoard from "@/components/MissionBoard";
 import ProgressPanel from "@/components/ProgressPanel";
 import InviteButton from "@/components/InviteButton";
 import { fmt, timeAgo } from "@/lib/format";
-import type { CatalogItem, HistoryRow, Mission, Stats } from "@/lib/types";
+import type { CatalogItem, HistoryRow, Stats, Task } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -15,9 +15,11 @@ export default async function Dashboard() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [wallet, missions, catalog, history, statsRes] = await Promise.all([
+  await supabase.rpc("process_due");
+
+  const [wallet, tasks, catalog, history, statsRes] = await Promise.all([
     supabase.from("wallets").select("id, available_balance").eq("owner_type", "user").eq("owner_id", user.id).single(),
-    supabase.from("missions").select("id,title,reward_amount,status,deadline,completed_at").eq("creator_id", user.id).order("created_at", { ascending: false }).limit(40),
+    supabase.rpc("my_tasks"),
     supabase.from("reward_catalog").select("id,title,reward_amount").eq("category", "personal").order("reward_amount"),
     supabase.rpc("my_history", { p_limit: 12 }),
     supabase.rpc("my_stats"),
@@ -58,7 +60,7 @@ export default async function Dashboard() {
       )}
 
       <MissionBoard
-        missions={(missions.data ?? []) as Mission[]}
+        missions={((tasks.data ?? []) as Task[]).filter((t) => t.mission_type === "personal" && t.is_creator)}
         catalog={(catalog.data ?? []) as CatalogItem[]}
         stats={stats}
       />
